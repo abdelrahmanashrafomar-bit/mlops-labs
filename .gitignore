@@ -1,5 +1,5 @@
 # Data
-/data/
+data/raw/
 
 # Mac OS-specific storage files
 .DS_Store
@@ -197,4 +197,3 @@ reports/*/*.png
 reports/*/*.pdf
 reports/*/*.html
 reports/*/*.txt
-/data
