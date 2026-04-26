@@ -1,27 +1,42 @@
-import os
+from pathlib import Path
 
 import pandas as pd
-from sklearn.model_selection import train_test_split
-
-SOURCE = os.path.join("data", "raw")
-DESTINATION = os.path.join("data", "processed")
 
 
-def read_process_data(
-    file_name: str,
-    id_col: str,
-    target_col: str,
-    logger,
-) -> None:
-    logger.info("Data Processing started")
-    df = pd.read_csv(os.path.join(SOURCE, f"{file_name}.csv"))
-    df.set_index(id_col, inplace=True)
-    train_df, test_df = train_test_split(
-        df, test_size=0.15, random_state=42, stratify=df[target_col]
-    )
-    train_df.to_parquet(
-        os.path.join(DESTINATION, f"{file_name}-train.parquet"), engine="pyarrow"
-    )
-    test_df.to_parquet(
-        os.path.join(DESTINATION, f"{file_name}-test.parquet"), engine="pyarrow"
-    )
+def main():
+    # 📁 root
+    BASE_DIR = Path(__file__).resolve().parents[2]
+
+    # 📂 paths
+    raw_path = BASE_DIR / "data" / "raw" / "train.csv"
+    processed_dir = BASE_DIR / "data" / "processed"
+    processed_dir.mkdir(exist_ok=True)
+
+    processed_path = processed_dir / "train.csv"
+
+    # 📥 load data
+    df = pd.read_csv(raw_path)
+
+    # 🧼 preprocessing
+    df["Age"] = df["Age"].fillna(df["Age"].median())
+    df["Embarked"] = df["Embarked"].fillna("S")
+
+    df["Sex"] = df["Sex"].map({"male": 0, "female": 1})
+
+    df = pd.get_dummies(df, columns=["Embarked"], drop_first=True)
+
+    # ✂️ features + target
+    X = df.drop(columns=["Survived", "Name", "Ticket", "Cabin"])
+    y = df["Survived"]
+
+    processed = X.copy()
+    processed["Survived"] = y
+
+    # 💾 save
+    processed.to_csv(processed_path, index=False)
+
+    print(f"Processed data saved at: {processed_path}")
+
+
+if __name__ == "__main__":
+    main()

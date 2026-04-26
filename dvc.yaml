@@ -1,0 +1,8 @@
+stages:
+  train:
+    cmd: uv run python src/training/train.py
+    deps:
+    - data/processed/train.csv
+    - src/training/train.py
+    outs:
+    - models/model.pkl
