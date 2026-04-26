@@ -1,8 +1,25 @@
 stages:
+  process:
+    cmd: uv run python src/training/process_data.py
+    deps:
+      - src/training/process_data.py
+      - data/raw/train.csv
+    outs:
+      - data/processed/train.csv
+
   train:
     cmd: uv run python src/training/train.py
     deps:
-    - data/processed/train.csv
-    - src/training/train.py
+      - src/training/train.py
+      - data/processed/train.csv
     outs:
-    - models/model.pkl
+      - models/model.pkl
+
+  evaluate:
+    cmd: uv run python src/training/evaluate.py
+    deps:
+      - src/training/evaluate.py
+      - models/model.pkl
+      - data/processed/train.csv
+    metrics:
+      - reports/metrics.json
